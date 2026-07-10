@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "entryPoint": "./src/index.js",
+    "name": "Anatel",
+    "slug": "Anatel",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icons/logo-app.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./src/assets/images/logo-anatel.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/icons/logo-app.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.mayrton.Anatel"
+    },
+    "web": {
+      "favicon": "./src/assets/icons/logo-app.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a626f4e5-97ba-4cb4-af00-03a42faf7d5c"
+      }
+    },
+    "sourceExts": [ "js", "json", "ts", "tsx", "jsx", "vue"]
+  }
+}

@@ -1,0 +1,11 @@
+[
+    { "ter": "100%", "color": [255, 0, 0, 0.8], "label": "Crítico" },
+    { "ter": "50%", "color": [255, 69, 0, 0.8], "label": "Muito Alto" },
+    { "ter": "35%", "color": [255, 140, 0, 0.8], "label": "Alto" },
+    { "ter": "20%", "color": [255, 215, 0, 0.8], "label": "Moderado" },
+    { "ter": "15%", "color": [173, 255, 47, 0.8], "label": "Baixo" },
+    { "ter": "8%", "color": [50, 205, 50, 0.8], "label": "Muito Baixo" },
+    { "ter": "4%", "color": [0, 128, 0, 0.8], "label": "Seguro" },
+    { "ter": "2%", "color": [0, 191, 255, 0.8], "label": "Mínimo" },
+    { "ter": "1%", "color": [30, 144, 255, 0.8], "label": "Insignificante" }
+]
