@@ -1,51 +1,89 @@
 # Projeto de Aplicativo de Exposição a Campo Eletromagnético
 
-Este projeto é um aplicativo de calculo da exposição a campos eletromagnéticos desenvolvido com React Native. O aplicativo utiliza mapas interativos para exibir torres de comunicação e suas áreas de alcance com base em dados fornecidos e calcula a exposição que o ser humano sofre. 
+Aplicativo desenvolvido em **React Native** para cálculo da exposição humana a campos eletromagnéticos. O sistema utiliza mapas interativos para exibir torres de telecomunicações, calcular suas áreas de cobertura e estimar a exposição em um ponto selecionado pelo usuário.
 
-## Funcionalidades
+---
 
-- Exibe torres de comunicação em um mapa interativo.
-- Permite ao usuário clicar em um ponto do mapa para visualizar as torres próximas.
-- Calcula e exibe círculos de alcance ao redor das torres.
-- Mostra uma tabela com informações sobre as torres próximas ao ponto clicado.
+# Funcionalidades
 
-## Tecnologias Utilizadas
+- 📍 Exibição de torres de telecomunicações em mapa interativo.
+- 🎯 Seleção de um ponto no mapa para análise.
+- 📡 Identificação das torres próximas ao ponto selecionado.
+- ⭕ Visualização das áreas de alcance das torres.
+- 📊 Exibição de uma tabela com informações das torres encontradas.
+- ⚡ Cálculo da exposição a campos eletromagnéticos no local escolhido.
 
-- **React Native**: Framework para construção de aplicativos móveis.
-- **react-native-maps**: Biblioteca para integração de mapas no React Native.
-- **Expo**: Plataforma para desenvolvimento e execução de aplicativos React Native.
-- **@react-navigation/native**: Biblioteca para navegação em aplicativos React Native.
+---
 
-## Instalação
+# Tecnologias Utilizadas
 
-Siga os passos abaixo para configurar e rodar o projeto localmente.
+- React Native
+- Expo SDK 53
+- TypeScript
+- React Native Maps
+- React Navigation
 
-1. **Clone o Repositório**  
+---
 
-    ```bash
-    git clone https://github.com/Mayrton777/Android-Anatel.git
-    cd Android-Anatel/app/
-    ```  
+# Pré-requisitos
 
-2. **Instale as Dependências**  
+Antes de iniciar, você precisará apenas de:
 
-    ```bash
-    npm i
-    ```  
+- Uma conta no GitHub.
+- Uma conta na Expo.
+- O aplicativo **Expo Go (SDK 53)** instalado em seu celular.
 
-    Este projeto utiliza o Expo. Caso não tenha instalado, utilize o seguinte comando:  
+> **Importante:** Este projeto foi desenvolvido para ser executado no **GitHub Codespaces**. Não é necessário instalar Node.js, npm ou qualquer dependência localmente no até a atual versão.
 
-    ```bash
-    npm install -g expo-cli
-    ```  
+---
 
-3. **Execute o Projeto**
+# Executando o projeto
 
-    ```bash
-    npx expo start
-    ```
+1. Faça um **Fork** deste repositório.
 
-## Desenvolvedor
+2. Abra o seu fork utilizando o **GitHub Codespaces**.
 
-Mayrton Eduardo
+3. No terminal do Codespaces, acesse a pasta do projeto:
 
+```bash
+cd app
+```
+
+4. Instale as dependências:
+
+```bash
+npm install
+```
+
+5. Inicie o servidor utilizando o modo **Tunnel**:
+
+```bash
+npx expo start --tunnel
+```
+
+> **O parâmetro `--tunnel` é obrigatório**, pois permite que o Expo Go no celular encontre o servidor executado dentro do Codespaces.
+
+6. Abra o **Expo Go** no celular.
+
+7. Faça login com a mesma conta Expo utilizada no projeto (caso necessário).
+
+8. Escaneie o QR Code exibido no terminal ou na interface do Expo.
+
+---
+
+# Como utilizar
+
+1. Abra o aplicativo no Expo Go.
+2. Navegue pelo mapa.
+3. Toque em qualquer ponto para realizar uma análise.
+4. O aplicativo exibirá:
+   - As torres próximas;
+   - Os círculos de alcance;
+   - A tabela com as informações das torres;
+   - O cálculo da exposição aos campos eletromagnéticos.
+
+---
+
+# Licença
+
+Este projeto foi desenvolvido para a Agência Nacional de Telecomunicações e conta com o trabalho de diversos estagiários.
