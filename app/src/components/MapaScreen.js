@@ -63,20 +63,23 @@ const MapaScreen = () => {
             setIsTableVisible(true);
     
             const groupedTowers = groupBy(nearbyTowers, tower => `${tower.Latitude},${tower.Longitude}`);
-            const filteredData = Object.values(groupedTowers).map(group => 
-                group.map(tower => ({
-                    NomeEntidade: tower.NomeEntidade,
-                    NumEstacao: tower.NumEstacao,
-                    EnderecoEstacao: tower.EnderecoEstacao,
-                    EndComplemento: tower.EndComplemento || null,
-                    SiglaUf: tower.SiglaUf,
-                    FreqTxMHz: parseFloat(tower.FreqTxMHz),
-                    GanhoAntena: parseFloat(tower.GanhoAntena),
-                    PotenciaTransmissorWatts: parseFloat(tower.PotenciaTransmissorWatts),
-                    Latitude: parseFloat(tower.Latitude),
-                    Longitude: parseFloat(tower.Longitude),
-                }))
-            );
+          const filteredData = Object.values(groupedTowers).map(group => 
+    group.map(tower => ({
+        NomeEntidade: tower.NomeEntidade,
+        NumEstacao: tower.NumEstacao,
+        EnderecoEstacao: tower.EnderecoEstacao,
+        EndComplemento: tower.EndComplemento || null,
+        SiglaUf: tower.SiglaUf,
+        FreqTxMHz: parseFloat(tower.FreqTxMHz),
+        GanhoAntena: parseFloat(tower.GanhoAntena),
+        PotenciaTransmissorWatts: parseFloat(tower.PotenciaTransmissorWatts),
+        Azimute: parseFloat(tower.Azimute),
+        AnguloElevacao: parseFloat(tower.AnguloElevacao),
+        AnguloMeiaPotenciaAntena: parseFloat(tower.AnguloMeiaPotenciaAntena),
+        Latitude: parseFloat(tower.Latitude),
+        Longitude: parseFloat(tower.Longitude),
+    }))
+);
     
             const alcance = calculo_R(filteredData);
             setRedCircleRadius(alcance);

@@ -1,9 +1,14 @@
-// Função para calcular a Potência Isotrópica Radiada Equivalente (EIRP) somando a potência do transmissor e o ganho da antena
-export function eirp(ptx, gtx) {
-    return ptx + gtx;  // Retorna a soma da potência de transmissão e o ganho da antena
+export function eirp(ptxWatts, gtxDbi) {
+  if (!isFinite(ptxWatts) || ptxWatts <= 0 || !isFinite(gtxDbi)) {
+    return null;
+  }
+  const ptxDbm = 10 * Math.log10(ptxWatts * 1000);
+  return ptxDbm + gtxDbi;
 }
 
-// Função para calcular o EIRP ajustado pelo fator Slim
 export function eirp_Slim(eirp, slim) {
-    return eirp / slim;  // Divide o EIRP pelo Slim para obter o EIRP ajustado
+    if (!slim || slim <= 0 || !isFinite(eirp)) {
+        return null;
+    }
+    return eirp / slim;
 }

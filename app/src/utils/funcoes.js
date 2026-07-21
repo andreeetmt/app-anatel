@@ -3,53 +3,94 @@ import { ganho_gaussian } from "./gaussiano";
 import { eirp, eirp_Slim } from "./calc_eirp";
 import { slim } from "./calc_slim";
 
+// Helper: valida se um número é utilizável (não NaN, não Infinity)
+function numeroValido(n) {
+    return typeof n === "number" && isFinite(n);
+}
+
+// Extrai e valida os campos numéricos de uma torre.
+// Retorna null se algum campo essencial for inválido (em vez de deixar
+// NaN se propagar silenciosamente pelo resto do cálculo).
+function extrairDadosTorre(dt) {
+    const {
+        FreqTxMHz: freq,
+        GanhoAntena: gTx,
+        PotenciaTransmissorWatts: pTx,
+        Azimute: azi,
+        AnguloElevacao: elev,
+        AnguloMeiaPotenciaAntena: meia,
+    } = dt;
+
+    const freqTx = parseFloat(freq);
+    const gtx = parseFloat(gTx);
+    const ptx = parseFloat(pTx);
+    const azimute = parseFloat(azi);
+    const elevacao = parseFloat(elev);
+    const meia_pot = parseFloat(meia);
+
+    if (
+        !numeroValido(freqTx) ||
+        !numeroValido(gtx) ||
+        !numeroValido(ptx) ||
+        !numeroValido(azimute) ||
+        !numeroValido(elevacao) ||
+        !numeroValido(meia_pot) ||
+        freqTx <= 0 ||
+        ptx <= 0
+    ) {
+        console.warn(
+            "Torre com dados inválidos, ignorada no cálculo:",
+            dt.NumEstacao,
+            dt.EnderecoEstacao,
+            { freqTx, gtx, ptx, azimute, elevacao, meia_pot }
+        );
+        return null;
+    }
+
+    return { freqTx, gtx, ptx, azimute, elevacao, meia_pot };
+}
+
+// Calcula a contribuição (EIRP/Slim) de uma única torre.
+// Retorna null se o resultado intermediário for inválido.
+function contribuicaoTorre(dt) {
+    const dados = extrairDadosTorre(dt);
+    if (!dados) return null;
+
+    const { freqTx, gtx, ptx } = dados;
+
+    const ptxdBm = w_to_dBm(ptx);
+    const ganho = gtx;
+    const vEIRP = eirp(ptxdBm, ganho);
+    const eirpW = dBm_to_w(vEIRP);
+    const vSlim = slim(freqTx);
+
+    if (!numeroValido(eirpW) || !numeroValido(vSlim) || vSlim <= 0) {
+        console.warn(
+            "Cálculo intermediário inválido para torre, ignorada:",
+            dt.NumEstacao,
+            { eirpW, vSlim }
+        );
+        return null;
+    }
+
+    return { eirpW, vSlim };
+}
+
 // Função para calcular o raio de alcance com base nos dados fornecidos
 function calculo_R(valor) {
     let somatoria = 0;
 
-    // Verifica se o valor é um array
     if (Array.isArray(valor)) {
-        // Itera sobre o array principal
         valor.forEach(subArray => {
-            // Verifica se o subArray é um array
             if (Array.isArray(subArray)) {
-                // Itera sobre o subArray
                 subArray.forEach(dt => {
-                    const { 
-                        FreqTxMHz: freq,
-                        GanhoAntena: gTx, 
-                        PotenciaTransmissorWatts: pTx,
-                        Azimute: azi,
-                        AnguloElevacao: elev,
-                        AnguloMeiaPotenciaAntena: meia
-                    } = dt;
+                    const contrib = contribuicaoTorre(dt);
+                    if (!contrib) return; // pula torre inválida, não contamina a somatória
 
-                    // Converte os valores de string para números
-                    let freqTx = parseFloat(freq);
-                    let gtx = parseFloat(gTx);
-                    let ptx = parseFloat(pTx);
-                    let azimute = parseFloat(azi);
-                    let elevacao = parseFloat(elev);
-                    let meia_pot = parseFloat(meia);
-
-                    // Converte a potência de transmissão de Watts para dBm
-                    let ptxdBm = w_to_dBm(ptx);
-                    
-                    // Calculando o ganha gaussiano
-                    let ganho = gtx
-
-                    // Calcula o EIRP
-                    let vEIPR = eirp(ptxdBm, ganho);
-
-                    // Converte o EIRP de dBm para Watts
-                    let eirpW = dBm_to_w(vEIPR);
-
-                    // Calcula o Slim com base na frequência
-                    let vSlim = slim(freqTx);
-
-                    // Calcula o resultado dividindo o EIRP pelo Slim e acumula na somatória
-                    let resultado = eirp_Slim(eirpW, vSlim)
-                    somatoria += resultado;
+                    const resultado = eirp_Slim(contrib.eirpW, contrib.vSlim);
+                    if (numeroValido(resultado)) {
+                        somatoria += resultado;
+                    }
                 });
             } else {
                 console.error("Elemento de valor não é um array:", subArray);
@@ -57,62 +98,30 @@ function calculo_R(valor) {
         });
     } else {
         console.error("Valor não é um array:", valor);
-        return 0;  // Retorna 0 como valor padrão se o valor não for um array
+        return 0;
     }
 
-    // Divide a somatória pelo fator 4π e retorna a raiz quadrada do resultado
     let result = somatoria / (4 * Math.PI);
-    return Math.sqrt(result);
+    return Math.sqrt(Math.max(result, 0)); // Math.max evita sqrt de negativo
 }
 
 // Função para calcular a Taxa de Exposição de Radiação (TER)
 function TER(valor, raio) {
     let somatoria = 0;
-    
-    // Verifica se o valor é um array
+
     if (Array.isArray(valor)) {
-        // Itera sobre o array principal
         valor.forEach(subArray => {
-            // Verifica se o subArray é um array
             if (Array.isArray(subArray)) {
-                // Itera sobre o subArray
                 subArray.forEach(dado => {
-                    const { FreqTxMHz: freq,
-                        GanhoAntena: gTx, 
-                        PotenciaTransmissorWatts: pTx,
-                        Azimute: azi,
-                        AnguloElevacao: elev,
-                        AnguloMeiaPotenciaAntena: meia 
-                    } = dado;
+                    const contrib = contribuicaoTorre(dado);
+                    if (!contrib) return; // pula torre inválida
 
-                    // Converte os valores de string para números
-                    let freqTx = parseFloat(freq);
-                    let gtx = parseFloat(gTx);
-                    let ptx = parseFloat(pTx);
-                    let azimute = parseFloat(azi);
-                    let elevacao = parseFloat(elev);
-                    let meia_pot = parseFloat(meia);
-                    
-                    // Converte a potência de transmissão de Watts para dBm
-                    let ptxdBm = w_to_dBm(ptx);
+                    const result =
+                        (contrib.eirpW / (4 * Math.PI * raio * raio)) / contrib.vSlim;
 
-                    // Calculando o ganha gaussiano
-                    let ganho = gtx
-
-                    // Calcula o EIRP
-                    let vEIRP = eirp(ptxdBm, ganho);
-
-                    // Converte o EIRP de dBm para Watts
-                    let eirpW = dBm_to_w(vEIRP);
-
-                    // Calcula o Slim com base na frequência
-                    let vSlim = slim(freqTx);
-                    
-                    // Calcula o resultado dividindo o EIRP pelo Slim e pelo raio ao quadrado
-                    let result = (eirpW / (4 * Math.PI * raio * raio)) / vSlim;
-
-                    // Acumula o resultado na somatória
-                    somatoria += result;
+                    if (numeroValido(result)) {
+                        somatoria += result;
+                    }
                 });
             } else {
                 console.error("Elemento de valor não é um array:", subArray);
@@ -121,37 +130,40 @@ function TER(valor, raio) {
     } else {
         console.log("Valor não é um array:", valor);
     }
-    
-    // Retorna a somatória dos valores calculados
+
     return somatoria;
 }
 
 // Função para determinar a cor com base no valor de TER
 function corRaio(cor) {
-    // Retorna a cor correspondente ao intervalo de valores de TER (RGBA)
+    // Trata NaN/Infinity explicitamente antes das faixas normais,
+    // para não cair silenciosamente no "else" genérico
+    if (!numeroValido(cor)) {
+        console.warn("TER inválido (NaN/Infinity), usando cor padrão:", cor);
+        return [200, 200, 200, 0.5]; // Cinza padrão - dado insuficiente
+    }
+
     if (cor > 1) {
-        return [255, 0, 0, 0.8];  // Vermelho (Crítico)
+        return [255, 0, 0, 0.8];
     } else if (0.5 < cor && cor <= 1) {
-        return [255, 69, 0, 0.8];  // Laranja avermelhado (Muito Alto)
+        return [255, 69, 0, 0.8];
     } else if (0.35 < cor && cor <= 0.5) {
-        return [255, 140, 0, 0.8];  // Laranja escuro (Alto)
+        return [255, 140, 0, 0.8];
     } else if (0.2 < cor && cor <= 0.35) {
-        return [255, 215, 0, 0.8];  // Dourado (Moderado)
+        return [255, 215, 0, 0.8];
     } else if (0.15 < cor && cor <= 0.2) {
-        return [173, 255, 47, 0.8];  // Verde amarelado (Baixo)
+        return [173, 255, 47, 0.8];
     } else if (0.08 < cor && cor <= 0.15) {
-        return [50, 205, 50, 0.8];  // Verde lima (Muito Baixo)
+        return [50, 205, 50, 0.8];
     } else if (0.04 < cor && cor <= 0.08) {
-        return [0, 128, 0, 0.8];  // Verde escuro (Seguro)
+        return [0, 128, 0, 0.8];
     } else if (0.02 < cor && cor <= 0.04) {
-        return [0, 191, 255, 0.8];  // Azul céu (Mínimo)
+        return [0, 191, 255, 0.8];
     } else if (0.01 < cor && cor <= 0.02) {
-        return [30, 144, 255, 0.8];  // Azul Dodger (Insignificante)
-    } else if (cor <= 0.01) {
-        return [30, 144, 255, 0.8];  // Azul Dodger (Insignificante)
+        return [30, 144, 255, 0.8];
     } else {
-        console.log("ERROR VALOR DE COR");
-        return [200, 200, 200, 0.5]; // Cinza padrão
+        // cor <= 0.01
+        return [30, 144, 255, 0.8];
     }
 }
 
@@ -160,52 +172,39 @@ function filtrarCoresUnicas(listaCor) {
     let coresUnicas = [];
     let coresVistas = new Set();
 
-    // Itera sobre a lista de cores
     for (let item of listaCor) {
         if (item.cor && Array.isArray(item.cor)) {
-            let corString = item.cor.join(',');  // Converte a cor para string
-
-            // Se a cor ainda não foi vista, adiciona à lista de cores únicas
+            let corString = item.cor.join(',');
             if (!coresVistas.has(corString)) {
                 coresUnicas.push(item);
-                coresVistas.add(corString);  // Marca a cor como vista
+                coresVistas.add(corString);
             }
         } else {
-            console.log("Cor indefinida ou não é um array:", item.cor);  // Caso a cor esteja indefinida ou não seja um array
+            console.log("Cor indefinida ou não é um array:", item.cor);
         }
     }
 
-    return coresUnicas;  // Retorna a lista de cores únicas
+    return coresUnicas;
 }
 
 // Função para calcular o alcance das torres e determinar a cor correspondente
 function alcanceTorre(dados) {
     let listaCor = [];
 
-    // Itera de -1 até 130 para calcular diferentes raios
     for (let i = -1; i < 130; i++) {
         let valor = dados;
 
-        // Calcula o raio com base no valor e no índice
         // Garante que o raio nunca fique negativo ou zero (Circle não aceita radius <= 0)
         let raio = Math.max(calculo_R(valor) + i, 0.1);
 
-        // Calcula o TER com base no raio
         let ter = TER(valor, raio);
-
-        // Converte o TER para porcentagem
-        let ter_por = Math.round(ter * 100);
-
-        // Determina a cor correspondente ao TER
+        let ter_por = numeroValido(ter) ? Math.round(ter * 100) : 0;
         let cor = corRaio(ter);
 
-        // Adiciona o resultado à lista de cores
         listaCor.push({ cor, raio, ter_por });
     }
-    
-    // Filtra e retorna apenas as cores únicas da lista
+
     return filtrarCoresUnicas(listaCor);
 }
 
-// Exporta as funções principais para uso em outros módulos
 export { calculo_R, TER, alcanceTorre };
